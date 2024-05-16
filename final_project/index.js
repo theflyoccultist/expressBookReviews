@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const jwt = require('jsonwebtoken');
 const session = require('express-session')
-const { authenticatedUser } = require('./router/auth_users.js');
+const { authenticatedUser, addReview, modifyReview, deleteReview } = require('./router/auth_users.js');
 const genl_routes = require('./router/general.js').general;
 
 const app = express();
@@ -57,15 +57,49 @@ app.post("/customer/login", (req, res) => {
   }
 });
 
+
+// Add a book review
+app.post('/customer/auth/review/:isbn', (req, res) => {
+  const isbn = req.params.isbn;
+  const review = req.body.review;
+
+  if (addReview(isbn, review)) {
+    res.status(200).send("Review added successfully");
+  } else {
+    res.status(404).send("Book not found");
+  }
+});
+
+// Modify a book review
+app.put('/customer/auth/review/:isbn/:index', (req, res) => {
+  const isbn = req.params.isbn;
+  const reviewIndex = parseInt(req.params.index);
+  const newReview = req.body.review;
+
+  if (modifyReview(isbn, reviewIndex, newReview)) {
+    res.status(200).send("Review modified successfully");
+  } else {
+    res.status(404).send("Book or review not found");
+  }
+});
+
+// Delete a book review
+app.delete('/customer/auth/review/:isbn/:index', (req, res) => {
+  const isbn = req.params.isbn;
+  const reviewIndex = parseInt(req.params.index);
+
+  if (deleteReview(isbn, reviewIndex)) {
+    res.status(200).send("Review deleted successfully");
+  } else {
+    res.status(404).send("Book or review not found");
+  }
+});
+
 // Example of a protected route
 app.get('/customer/auth/profile', (req, res) => {
   res.send('This is a protected route, user profile');
 });
 
-// Additional router
-// Replace this with actual router if available
-// const regd_users = require('./path/to/your/regd_users'); 
-// app.use('/api', regd_users);
 
 app.use("/", genl_routes);
 
